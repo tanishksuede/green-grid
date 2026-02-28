@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://lhhhqzpcemcgdebxnhyq.supabase.co'
-const supabaseAnonKey = 'sb_publishable_hzKDR9xBEfIfgPczBkQEsw_eupsPleA'
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+/* ═══════════════════════════════════════════════════════════════════════
+   S Y N G R I D  —  Obsidian Space Energy Marketplace
+   Prism Visual Engine | WebGL-Style | Cinematic | Super-App Layer
+   Palette: Obsidian (#050505) · Solar Amber (#FFB300) · Wind Cyan (#00E5FF) · Biogas Copper (#D84315)
+═══════════════════════════════════════════════════════════════════════ */
+
+// ── PRISM PALETTE ────────────────────────────────────────────────────
 const P = {
   obsidian:   "#050505",
   surface:    "#0a0a0f",
@@ -1833,46 +1836,22 @@ export default function App() {
   const [transactions, setTransactions] = useState(DB.transactions);
   const [toast, setToast]       = useState(null);
   const [theme, setTheme]       = useState("dark");
-  const [deals, setDeals] = useState([]);
+  const [deals, setDeals] = useState([
+    { id:1, listingId:1, producerId:1, producerName:"IIT Delhi Solar Rooftop",   buyerId:4, buyerName:"Green Hostel — Mumbai", units:100, totalPrice:420,  energyType:"solar", location:"Delhi",  status:"pending" },
+    { id:2, listingId:2, producerId:2, producerName:"Rajasthan Wind Energy Ltd", buyerId:5, buyerName:"TechCorp Solutions",     units:200, totalPrice:760,  energyType:"wind",  location:"Jaipur", status:"accepted", tx_hash:genHash() },
+    { id:3, listingId:6, producerId:7, producerName:"BITS Pilani Campus",        buyerId:6, buyerName:"Symbiosis University",   units:300, totalPrice:1170, energyType:"solar", location:"Pilani", status:"pending" },
+  ]);
 
-  useEffect(() => {
-    // 1. Fetch existing deals from the cloud on load
-    const fetchDeals = async () => {
-      const { data } = await supabase.from('deals').select('*');
-      if (data) setDeals(data);
-    };
-    fetchDeals();
+  const onRequestPurchase = (listing, units) => {
+    const prod = getUserById(listing.producer_id);
+    const isLocal = listing.location.toLowerCase()===(user.location||"").toLowerCase();
+    const flashDisc = listing.flashSale && listing.flashSale.endsAt>Date.now() ? listing.flashSale.discount : 0;
+    const effPrice = isLocal ? listing.price_per_unit*(1-LOCAL_DISC)*(1-flashDisc) : listing.price_per_unit*(1-flashDisc);
+    const coins = calcGridCoins(units);
+    setDeals(d=>[...d, { id:d.length+1, listingId:listing.id, producerId:listing.producer_id, producerName:prod?.name||"Producer", buyerId:user.id, buyerName:user.name, units, totalPrice:+(units*effPrice).toFixed(0), energyType:listing.energy_type, location:listing.location, status:"pending" }]);
+    setToast(`✅ Purchase request sent! 🌱 ${calcCO2(units)} kg CO₂ saved · 🪙 +${coins} GridCoins pending`);
+  };
 
-    // 2. Listen for NEW deals in real-time (Seller will see them instantly)
-    const subscription = supabase
-      .channel('deals-live')
-      .on('postgres_changes', { event: 'INSERT', table: 'deals' }, (payload) => {
-        setDeals((current) => [...current, payload.new]);
-      })
-      .subscribe();
-
-    return () => supabase.removeChannel(subscription);
-  }, []);
- const onRequestPurchase = async (listing, units) => {
-    const isLocal = listing.location.toLowerCase() === (user.location || "").toLowerCase();
-    const effPrice = isLocal ? listing.price_per_unit * 0.95 : listing.price_per_unit;
-
-    const { error } = await supabase.from('deals').insert([{ 
-      listingId: listing.id, 
-      producerId: listing.producer_id,
-      producerName: getUserById(listing.producer_id)?.name || "Producer",
-      buyerId: user.id, 
-      buyerName: user.name,
-      units: units, 
-      totalPrice: +(units * effPrice).toFixed(0),
-      energyType: listing.energy_type,
-      location: listing.location,
-      status: 'pending'
-    }]);
-
-    if (!error) setToast("🚀 Request sent to Global Cloud!");
-    else setToast("Error: " + error.message);
-};
   const onUpdateDeal = (dealId, status) => {
     const deal = deals.find(d=>d.id===dealId);
     const hash = status==="accepted" ? genHash() : null;
