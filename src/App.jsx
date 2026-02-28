@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-
- import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = 'https://lhhhqzpcemcgdebxnhyq.supabase.co'
 const supabaseAnonKey = 'sb_publishable_hzKDR9xBEfIfgPczBkQEsw_eupsPleA'
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
- P = {
+const P = {
   obsidian:   "#050505",
   surface:    "#0a0a0f",
   card:       "rgba(12,12,18,0.85)",
