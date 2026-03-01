@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "./firebase";
 const P = {
   obsidian:   "#050505",
   surface:    "#0a0a0f",
@@ -1916,7 +1919,16 @@ function GroupBusinessPage() {
 
 // ── APP ROOT ─────────────────────────────────────────────────────────
 export default function App() {
-  
+  const [firebaseUser, setFirebaseUser] = useState(null);
+const [authLoading, setAuthLoading] = useState(true);
+
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    setFirebaseUser(currentUser);
+    setAuthLoading(false);
+  });
+  return () => unsubscribe();
+}, []);
   const [preloaderDone, setPreloaderDone] = useState(false);
   const [preloaderData, setPreloaderData] = useState(null);
   const [user, setUser]         = useState(null);
@@ -1951,7 +1963,24 @@ export default function App() {
     } else if (status==="rejected") setToast("Deal rejected.");
   };
 
-  
+  if (authLoading) return null;
+
+if (!firebaseUser) return (
+  <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"#050505" }}>
+    <GlobalStyles/>
+    <PrismCursor/>
+    <div style={{ textAlign:"center" }}>
+      <div style={{ fontSize:60, marginBottom:16 }}>⚡</div>
+      <div style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:48, color:"#FFB300", marginBottom:8 }}>SYNGRID</div>
+      <div style={{ color:"#5a5040", fontSize:12, letterSpacing:4, marginBottom:40 }}>RENEWABLE ENERGY MARKETPLACE</div>
+      <button onClick={() => signInWithPopup(auth, googleProvider)}
+        style={{ padding:"14px 32px", borderRadius:12, border:"1px solid rgba(255,179,0,0.4)", background:"rgba(255,179,0,0.08)", color:"#FFB300", fontSize:15, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:12, margin:"0 auto" }}>
+        <img src="https://www.google.com/favicon.ico" width={20} height={20}/>
+        Sign in with Google
+      </button>
+    </div>
+  </div>
+);
   if (!preloaderDone) return (
     <><GlobalStyles/><PrismCursor/><Preloader onComplete={d=>{setPreloaderData(d);setPreloaderDone(true);}}/></>
   );
