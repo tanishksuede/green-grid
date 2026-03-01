@@ -1983,10 +1983,9 @@ if (!firebaseUser) return (
     <><GlobalStyles/><PrismCursor/><Preloader onComplete={d=>{setPreloaderData(d);setPreloaderDone(true);}}/></>
   );
 
-  if (!user) {
-  const matched = DB.users.find(u => u.email === firebaseUser.email) || DB.users[3];
-  setUser(matched);
-}
+  if (!user) return (
+  <><GlobalStyles/><PrismCursor/><AuthPage onLogin={u=>{setUser(u);setPage("home");}} preloaderData={preloaderData}/></>
+);
 
   const isP = user.role==="producer";
   const navItems = isP
