@@ -1,14 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "./firebase";
-import Login from "./login";
-/* ═══════════════════════════════════════════════════════════════════════
-   S Y N G R I D  —  Obsidian Space Energy Marketplace
-   Prism Visual Engine | WebGL-Style | Cinematic | Super-App Layer
-   Palette: Obsidian (#050505) · Solar Amber (#FFB300) · Wind Cyan (#00E5FF) · Biogas Copper (#D84315)
-═══════════════════════════════════════════════════════════════════════ */
 
-// ── PRISM PALETTE ────────────────────────────────────────────────────
 const P = {
   obsidian:   "#050505",
   surface:    "#0a0a0f",
@@ -1925,15 +1916,7 @@ function GroupBusinessPage() {
 
 // ── APP ROOT ─────────────────────────────────────────────────────────
 export default function App() {
-  const [firebaseUser, setFirebaseUser] = useState(null);
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setFirebaseUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
-
-if (!firebaseUser) return <Login />;
+  
   const [preloaderDone, setPreloaderDone] = useState(false);
   const [preloaderData, setPreloaderData] = useState(null);
   const [user, setUser]         = useState(null);
