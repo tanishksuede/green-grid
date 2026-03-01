@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { signInWithPopup } from "firebase/auth";
+import { onAuthStateChanged, signOut, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "./firebase";
 const P = {
   obsidian:   "#050505",
