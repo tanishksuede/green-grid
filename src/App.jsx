@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-
+import { useEffect, useState } from "react";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "./firebase";
+import Login from "./login";
 /* ═══════════════════════════════════════════════════════════════════════
    S Y N G R I D  —  Obsidian Space Energy Marketplace
    Prism Visual Engine | WebGL-Style | Cinematic | Super-App Layer
@@ -1923,6 +1926,16 @@ function GroupBusinessPage() {
 
 // ── APP ROOT ─────────────────────────────────────────────────────────
 export default function App() {
+  const [firebaseUser, setFirebaseUser] = useState(null);
+
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    setFirebaseUser(currentUser);
+  });
+  return () => unsubscribe();
+}, []);
+
+if (!firebaseUser) return <Login />;
   const [preloaderDone, setPreloaderDone] = useState(false);
   const [preloaderData, setPreloaderData] = useState(null);
   const [user, setUser]         = useState(null);
