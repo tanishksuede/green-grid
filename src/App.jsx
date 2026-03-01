@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "./firebase";
 const P = {
@@ -1985,9 +1985,10 @@ if (!firebaseUser) return (
     <><GlobalStyles/><PrismCursor/><Preloader onComplete={d=>{setPreloaderData(d);setPreloaderDone(true);}}/></>
   );
 
-  if (!user) return (
-    <><GlobalStyles/><PrismCursor/><AuthPage onLogin={u=>{setUser(u);setPage("home");}} preloaderData={preloaderData}/></>
-  );
+  if (!user) {
+  const matched = DB.users.find(u => u.email === firebaseUser.email) || DB.users[3];
+  setUser(matched);
+}
 
   const isP = user.role==="producer";
   const navItems = isP
@@ -1998,7 +1999,7 @@ if (!firebaseUser) return (
     <div style={{ minHeight:"100vh", background:P.obsidian, color:P.text, paddingBottom:44 }}>
       <GlobalStyles/>
       <PrismCursor/>
-      <Navbar user={user} page={page} setPage={setPage} onLogout={()=>{setUser(null);setPage("home");}} theme={theme} setTheme={setTheme}/>
+      <Navbar user={user} page={page} setPage={setPage} onLogout={()=>{ signOut(auth); setUser(null); setPage("home"); }} theme={theme} setTheme={setTheme}/>
 
       {/* Sub-nav */}
       <div style={{ borderBottom:`1px solid ${P.border}`, background:"rgba(5,5,5,0.9)", backdropFilter:"blur(24px)", padding:"0 32px", display:"flex", gap:0, overflowX:"auto" }}>
