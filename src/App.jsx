@@ -1926,13 +1926,12 @@ function GroupBusinessPage() {
 // ── APP ROOT ─────────────────────────────────────────────────────────
 export default function App() {
   const [firebaseUser, setFirebaseUser] = useState(null);
-
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-    setFirebaseUser(currentUser);
-  });
-  return () => unsubscribe();
-}, []);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setFirebaseUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
 if (!firebaseUser) return <Login />;
   const [preloaderDone, setPreloaderDone] = useState(false);
@@ -1969,6 +1968,7 @@ if (!firebaseUser) return <Login />;
     } else if (status==="rejected") setToast("Deal rejected.");
   };
 
+  if (!firebaseUser) return <Login />;
   if (!preloaderDone) return (
     <><GlobalStyles/><PrismCursor/><Preloader onComplete={d=>{setPreloaderData(d);setPreloaderDone(true);}}/></>
   );
