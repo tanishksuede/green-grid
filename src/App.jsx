@@ -1951,7 +1951,7 @@ export default function App() {
     } else if (status==="rejected") setToast("Deal rejected.");
   };
 
-  if (!firebaseUser) return <Login />;
+  
   if (!preloaderDone) return (
     <><GlobalStyles/><PrismCursor/><Preloader onComplete={d=>{setPreloaderData(d);setPreloaderDone(true);}}/></>
   );
