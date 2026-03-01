@@ -549,8 +549,8 @@ function NetworkPage() {
 
 // ── NAVBAR ───────────────────────────────────────────────────────────
 function Navbar({ user, page, setPage, onLogout, theme, setTheme }) {
-  const [dropdown, setDropdown] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  const navRef = useRef(null);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 30);
     window.addEventListener("scroll", fn);
@@ -560,13 +560,28 @@ function Navbar({ user, page, setPage, onLogout, theme, setTheme }) {
   const userCoins = user ? (DB.users.find(u=>u.id===user.id)?.gridCoins || user.gridCoins || 0) : 0;
 
   const megaMenu = [
-    { id:"about",    label:"About Us",       items:["ESG Goals 2030","Carbon Neutrality","SDG Compliance","Impact Reports"] },
-    { id:"business", label:"Group Business", items:["☀️ Solar Tech","💨 Wind Logistics","♻️ Biogas Labs","🔗 Grid Infrastructure"] },
-    { id:"pools",    label:"Community Pools",items:["Delhi Solar Collective","Rajasthan Wind Alliance","Punjab Green Bloc","Join a Pool →"] },
+    {
+      id:"about", label:"About Us",
+      items:[
+        { label:"ESG Goals 2030",     page:"about" },
+        { label:"Carbon Neutrality",  page:"about" },
+        { label:"SDG Compliance",     page:"about" },
+        { label:"Impact Reports",     page:"about" },
+      ]
+    },
+    {
+      id:"business", label:"Group Business",
+      items:[
+        { label:"☀️ Solar Tech",         page:"business" },
+        { label:"💨 Wind Logistics",      page:"business" },
+        { label:"♻️ Biogas Labs",         page:"business" },
+        { label:"🔗 Grid Infrastructure", page:"business" },
+      ]
+    },
   ];
 
   return (
-    <nav style={{
+    <nav ref={navRef} style={{
       position:"sticky", top:0, zIndex:500,
       background: scrolled ? "rgba(5,5,5,0.92)" : "transparent",
       backdropFilter: scrolled ? "blur(24px) saturate(2)" : "none",
@@ -581,43 +596,19 @@ function Navbar({ user, page, setPage, onLogout, theme, setTheme }) {
         <span style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:26, letterSpacing:"0.1em", color:P.text }}>SYN<span style={{ color:P.amber }}>GRID</span></span>
       </div>
 
-      {/* Mega Menu */}
+      {/* Nav Buttons */}
       {megaMenu.map(nav => (
-        <div key={nav.id} style={{ position:"relative" }}
-          onMouseEnter={() => setDropdown(nav.id)}
-          onMouseLeave={() => setDropdown(null)}>
-          <button style={{ padding:"0 16px", height:60, background:"none", border:"none", color:dropdown===nav.id?P.amber:P.textD, fontWeight:500, fontSize:13, cursor:"pointer", fontFamily:"inherit", letterSpacing:0.3, display:"flex", alignItems:"center", gap:5, transition:"color 0.2s" }}>
-            {nav.label} <span style={{ fontSize:8, opacity:0.5, marginLeft:2 }}>▾</span>
-          </button>
-          {dropdown===nav.id && (
-            <div style={{ position:"absolute", top:"100%", left:0, background:"rgba(8,8,14,0.96)", border:`1px solid ${P.border}`, borderRadius:14, padding:8, minWidth:210, backdropFilter:"blur(24px)", animation:"scale-in 0.18s ease", boxShadow:`0 24px 80px rgba(0,0,0,0.8), 0 0 0 1px ${P.border}` }}>
-              {nav.items.map((item, i) => (
-                <div key={i} style={{ padding:"10px 16px", borderRadius:9, color:P.textD, fontSize:13, cursor:"pointer", transition:"all 0.15s" }}
-                  onMouseEnter={e => { e.currentTarget.style.background=P.amberSoft; e.currentTarget.style.color=P.amber; }}
-                  onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=P.textD; }}>
-                  {item}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <button key={nav.id} onClick={() => setPage(nav.items[0].page)} style={{ padding:"0 16px", height:60, background:"none", border:"none", color:page===nav.items[0].page?P.amber:P.textD, fontWeight:500, fontSize:13, cursor:"pointer", fontFamily:"inherit", letterSpacing:0.3, display:"flex", alignItems:"center", transition:"color 0.2s" }}
+          onMouseEnter={e => { e.currentTarget.style.color=P.amber; }}
+          onMouseLeave={e => { e.currentTarget.style.color=page===nav.items[0].page?P.amber:P.textD; }}>
+          {nav.label}
+        </button>
       ))}
-
-      <button onClick={() => setPage("network")} style={{ padding:"0 16px", height:60, background:"none", border:"none", color:page==="network"?P.amber:P.textD, fontWeight:500, fontSize:13, cursor:"pointer", fontFamily:"inherit", letterSpacing:0.3, display:"flex", alignItems:"center", gap:6, transition:"color 0.2s" }}>
-        🗺 Network Map
-      </button>
 
       <div style={{ flex:1 }}/>
 
       {/* GridCoins */}
       {user && <GridCoinBadge coins={userCoins} />}
-
-      {/* Theme */}
-      <button onClick={() => setTheme(theme==="dark"?"light":"dark")} style={{ margin:"0 12px", padding:"6px 14px", borderRadius:30, border:`1px solid ${P.border}`, background:"transparent", color:P.muted, fontSize:11, cursor:"pointer", fontFamily:"inherit", fontWeight:600, transition:"all 0.2s", display:"flex", alignItems:"center", gap:5 }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor=P.amber; e.currentTarget.style.color=P.amber; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor=P.border; e.currentTarget.style.color=P.muted; }}>
-        {theme==="dark" ? "☀️" : "🌑"} {theme==="dark" ? "Solar" : "Obsidian"}
-      </button>
 
       {user && (
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -1826,6 +1817,110 @@ function ROIPage() {
   );
 }
 
+// ── ABOUT PAGE ───────────────────────────────────────────────────────
+function AboutPage() {
+  const pillars = [
+    { icon:"🌱", title:"ESG Goals 2030", color:P.success, desc:"We are committed to net-zero operations by 2030. Every kWh traded on SynGrid directly displaces fossil-fuel generation, contributing to measurable Scope 2 emission reductions for our users." },
+    { icon:"♻️", title:"Carbon Neutrality", color:P.cyan, desc:"SynGrid's infrastructure runs on 100% renewable energy. Our blockchain ledger is optimised for minimal energy consumption, and we offset all residual emissions through verified carbon credits." },
+    { icon:"📜", title:"SDG Compliance", color:P.indigo, desc:"Aligned with UN Sustainable Development Goals 7 (Clean Energy), 9 (Industry & Innovation) and 13 (Climate Action). Annual compliance audits are published in our public Impact Reports." },
+    { icon:"📊", title:"Impact Reports", color:P.amber, desc:"Quarterly reports detail total clean energy traded, CO₂ avoided, GridCoins distributed, and community pool growth. Transparent, verifiable, on-chain." },
+  ];
+  const stats = [
+    { v:"2,230 kWh", l:"Total Clean Energy Traded" },
+    { v:"1,009 kg", l:"CO₂ Collectively Avoided" },
+    { v:"48 🌳", l:"Tree Equivalent Planted" },
+    { v:"6", l:"Blockchain-Verified Deals" },
+  ];
+  return (
+    <div style={{ animation:"slide-up 0.5s ease" }}>
+      <div style={{ marginBottom:32 }}>
+        <div style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:"clamp(36px,4vw,60px)", letterSpacing:"0.06em", color:P.text, lineHeight:1 }}>
+          ABOUT <span style={{ color:P.amber }}>SYNGRID</span>
+        </div>
+        <div style={{ color:P.muted, fontSize:14, marginTop:8, maxWidth:560 }}>
+          India's first peer-to-peer renewable energy marketplace — connecting clean energy producers directly with conscious buyers.
+        </div>
+      </div>
+
+      {/* Mission banner */}
+      <ObsidianCard style={{ marginBottom:28, padding:"28px 32px", background:`linear-gradient(135deg, rgba(255,179,0,0.05), rgba(0,229,255,0.03))`, border:`1px solid ${P.amber}30` }}>
+        <div style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:22, color:P.amber, letterSpacing:"0.08em", marginBottom:10 }}>OUR MISSION</div>
+        <p style={{ color:P.textD, fontSize:14, lineHeight:1.8, maxWidth:720 }}>
+          SynGrid exists to democratise access to clean energy across India. By eliminating intermediaries and leveraging blockchain transparency, we enable solar rooftops, wind farms, and biogas plants to transact directly with hostels, universities, and businesses — at fair, market-driven prices. Every trade heals the grid.
+        </p>
+      </ObsidianCard>
+
+      {/* Stats row */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:16, marginBottom:28 }}>
+        {stats.map((s,i) => (
+          <ObsidianCard key={i} style={{ textAlign:"center", padding:"20px 16px" }}>
+            <div style={{ fontFamily:"'JetBrains Mono', monospace", fontSize:26, color:P.amber, fontWeight:700 }}>{s.v}</div>
+            <div style={{ color:P.muted, fontSize:11, marginTop:6, textTransform:"uppercase", letterSpacing:1 }}>{s.l}</div>
+          </ObsidianCard>
+        ))}
+      </div>
+
+      {/* ESG Pillars */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))", gap:20 }}>
+        {pillars.map((p,i) => (
+          <ObsidianCard key={i} style={{ padding:"24px 24px" }}>
+            <div style={{ fontSize:32, marginBottom:12 }}>{p.icon}</div>
+            <div style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:18, color:p.color, letterSpacing:"0.06em", marginBottom:10 }}>{p.title}</div>
+            <p style={{ color:P.textD, fontSize:13, lineHeight:1.75 }}>{p.desc}</p>
+          </ObsidianCard>
+        ))}
+      </div>
+
+      {/* Team note */}
+      <ObsidianCard style={{ marginTop:28, padding:"24px 32px", textAlign:"center" }}>
+        <div style={{ color:P.muted, fontSize:11, textTransform:"uppercase", letterSpacing:2, marginBottom:8 }}>Built with purpose</div>
+        <div style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:20, color:P.text }}>
+          A student-led initiative powering India's <span style={{ color:P.amber }}>clean energy future</span>
+        </div>
+      </ObsidianCard>
+    </div>
+  );
+}
+
+// ── GROUP BUSINESS PAGE ───────────────────────────────────────────────
+function GroupBusinessPage() {
+  const units = [
+    { icon:"☀️", title:"Solar Tech", color:P.solar, desc:"End-to-end solar rooftop installation, panel procurement, and real-time monitoring APIs. We partner with tier-1 manufacturers to bring down LCOE below ₹2.5/kWh for large campus deployments.", stats:[{l:"Installed Capacity",v:"150 MW+"},{l:"Partners",v:"12 OEMs"},{l:"Avg. Payback",v:"4.2 yrs"}] },
+    { icon:"💨", title:"Wind Logistics", color:P.wind, desc:"Turbine siting analytics, O&M scheduling, and wind-resource modelling for small & medium wind farms across Rajasthan and Gujarat. We handle permitting to commissioning.", stats:[{l:"Turbines Managed",v:"240+"},{l:"Avg. PLF",v:"32%"},{l:"States Active",v:"4"}] },
+    { icon:"♻️", title:"Biogas Labs", color:P.copper, desc:"Agricultural waste-to-energy conversion consulting. Our labs develop custom feedstock blends, monitor gas yield, and integrate biogas output seamlessly into the SynGrid marketplace.", stats:[{l:"Plants Supported",v:"18"},{l:"Waste Diverted",v:"9,200 t/yr"},{l:"kWh/Ton Avg",v:"300"}] },
+    { icon:"🔗", title:"Grid Infrastructure", color:P.indigo, desc:"Smart metering, blockchain settlement layer, and DER (Distributed Energy Resource) aggregation middleware. Our API-first stack connects producers to buyers in under 200 ms.", stats:[{l:"API Uptime",v:"99.97%"},{l:"Settlement Time",v:"< 2 s"},{l:"Nodes Active",v:"7"}] },
+  ];
+  return (
+    <div style={{ animation:"slide-up 0.5s ease" }}>
+      <div style={{ marginBottom:32 }}>
+        <div style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:"clamp(36px,4vw,60px)", letterSpacing:"0.06em", color:P.text, lineHeight:1 }}>
+          GROUP <span style={{ color:P.amber }}>BUSINESS</span>
+        </div>
+        <div style={{ color:P.muted, fontSize:14, marginTop:8, maxWidth:560 }}>
+          Four specialised verticals powering the full renewable energy value chain — from generation to settlement.
+        </div>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))", gap:22 }}>
+        {units.map((u,i) => (
+          <ObsidianCard key={i} style={{ padding:"28px 24px" }}>
+            <div style={{ fontSize:38, marginBottom:14 }}>{u.icon}</div>
+            <div style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:22, color:u.color, letterSpacing:"0.06em", marginBottom:10 }}>SynGrid {u.title}</div>
+            <p style={{ color:P.textD, fontSize:13, lineHeight:1.75, marginBottom:18 }}>{u.desc}</p>
+            <div style={{ borderTop:`1px solid ${P.border}`, paddingTop:14, display:"flex", flexDirection:"column", gap:8 }}>
+              {u.stats.map((s,j) => (
+                <div key={j} style={{ display:"flex", justifyContent:"space-between" }}>
+                  <span style={{ color:P.muted, fontSize:11 }}>{s.l}</span>
+                  <span style={{ fontFamily:"'JetBrains Mono', monospace", color:u.color, fontWeight:700, fontSize:12 }}>{s.v}</span>
+                </div>
+              ))}
+            </div>
+          </ObsidianCard>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── APP ROOT ─────────────────────────────────────────────────────────
 export default function App() {
   const [preloaderDone, setPreloaderDone] = useState(false);
@@ -1902,6 +1997,8 @@ export default function App() {
         {page==="network"       && <NetworkPage/>}
         {page==="community_pools" && <CommunityPoolsPage user={user} setToast={setToast}/>}
         {page==="gridcoins"     && <GridCoinWallet user={user}/>}
+        {page==="about"         && <AboutPage/>}
+        {page==="business"      && <GroupBusinessPage/>}
       </div>
 
       <ImpactTicker transactions={transactions} listings={listings}/>
